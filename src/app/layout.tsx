@@ -3,6 +3,7 @@ import { Inter } from 'next/font/google';
 
 import { ClerkProvider } from '@clerk/nextjs';
 
+import { TRPCReactProvider } from '@/trpc/client';
 import { TooltipProvider } from '@/components/ui/tooltip';
 
 import './globals.css';
@@ -22,9 +23,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <ClerkProvider afterSignOutUrl="/">
-          <TooltipProvider>{children}</TooltipProvider>
-        </ClerkProvider>
+        <TRPCReactProvider>
+          <ClerkProvider afterSignOutUrl="/">
+            <TooltipProvider>{children}</TooltipProvider>
+          </ClerkProvider>
+        </TRPCReactProvider>
       </body>
     </html>
   );
