@@ -1,7 +1,12 @@
 import { Button } from '@/components/ui/button';
+import { getQueryClient, trpc } from '@/trpc/server';
 import { Show, SignInButton, SignUpButton } from '@clerk/nextjs';
 
-export default function Home() {
+export default async function Home() {
+  const queryClient = getQueryClient();
+
+  void queryClient.prefetchQuery(trpc.hello.queryOptions({ text: 'Hello' }));
+
   return (
     <>
       <div>I will load videos in the future!</div>
