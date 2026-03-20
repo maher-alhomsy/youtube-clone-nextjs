@@ -1,23 +1,25 @@
-import { Button } from '@/components/ui/button';
+import { Suspense } from 'react';
+
+import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
+import { ErrorBoundary } from 'react-error-boundary';
+
+import PageView from '@/modules/home/ui/views/page-view';
 import { getQueryClient, trpc } from '@/trpc/server';
-import { Show, SignInButton, SignUpButton } from '@clerk/nextjs';
 
 export default async function Home() {
   const queryClient = getQueryClient();
 
-  void queryClient.prefetchQuery(trpc.hello.queryOptions({ text: 'Hello' }));
+  void queryClient.prefetchQuery(trpc.home.getHome.queryOptions());
 
   return (
-    <>
-      <div>I will load videos in the future!</div>
+    <HydrationBoundary state={dehydrate(queryClient)}>
+      <Suspense fallback={<p>Loading...</p>}>
+        <ErrorBoundary fallback={<p>Error</p>}>
+          <div>I will load videos in the future!</div>
 
-      <Show when="signed-out">
-        <SignInButton />
-
-        <SignUpButton>
-          <Button>Sign Up</Button>
-        </SignUpButton>
-      </Show>
-    </>
+          <PageView />
+        </ErrorBoundary>
+      </Suspense>
+    </HydrationBoundary>
   );
 }
