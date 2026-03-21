@@ -1,8 +1,10 @@
-import { UserCircleIcon } from 'lucide-react';
+'use client';
+
+import { ClapperboardIcon, UserCircleIcon } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 
-import { SignInButton, UserButton, SignOutButton, Show } from '@clerk/nextjs';
+import { SignInButton, UserButton, Show } from '@clerk/nextjs';
 
 export const AuthButton = () => {
   return (
@@ -20,7 +22,15 @@ export const AuthButton = () => {
       </Show>
 
       <Show when="signed-in">
-        <UserButton />
+        <UserButton>
+          <UserButton.MenuItems>
+            <UserButton.Link
+              label="Studio"
+              href="/studio"
+              labelIcon={<ClapperboardIcon className="size-4" />}
+            />
+          </UserButton.MenuItems>
+        </UserButton>
       </Show>
     </>
   );
