@@ -1,25 +1,24 @@
-import { Suspense } from 'react';
-
 import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
-import { ErrorBoundary } from 'react-error-boundary';
 
-import PageView from '@/modules/home/ui/views/page-view';
 import { getQueryClient, trpc } from '@/trpc/server';
+import HomeView from '@/modules/home/ui/views/home-view';
 
-export default async function Home() {
+interface Props {
+  searchParams: Promise<{ categoryId?: string }>;
+}
+
+const Home = async ({ searchParams }: Props) => {
+  const { categoryId } = await searchParams;
+
   const queryClient = getQueryClient();
 
-  void queryClient.prefetchQuery(trpc.home.getHome.queryOptions());
+  void queryClient.prefetchQuery(trpc.categories.getMany.queryOptions());
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
-      <Suspense fallback={<p>Loading...</p>}>
-        <ErrorBoundary fallback={<p>Error</p>}>
-          <div>I will load videos in the future!</div>
-
-          <PageView />
-        </ErrorBoundary>
-      </Suspense>
+      <HomeView categoryId={categoryId} />
     </HydrationBoundary>
   );
-}
+};
+
+export default Home;
