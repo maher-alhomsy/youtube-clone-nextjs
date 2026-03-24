@@ -3,6 +3,7 @@ import { Inter } from 'next/font/google';
 
 import { ClerkProvider } from '@clerk/nextjs';
 
+import { Toaster } from '@/components/ui/sonner';
 import { TRPCReactProvider } from '@/trpc/client';
 import { TooltipProvider } from '@/components/ui/tooltip';
 
@@ -25,7 +26,10 @@ export default function RootLayout({
       <body className={inter.className}>
         <TRPCReactProvider>
           <ClerkProvider afterSignOutUrl="/">
-            <TooltipProvider>{children}</TooltipProvider>
+            <TooltipProvider>
+              <Toaster />
+              {children}
+            </TooltipProvider>
           </ClerkProvider>
         </TRPCReactProvider>
       </body>
