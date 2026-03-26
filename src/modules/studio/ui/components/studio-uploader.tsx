@@ -32,7 +32,7 @@ export const StudioUploader = ({ onSuccess, endpoint }: Props) => {
           </div>
 
           <div className="flex flex-col gap-2 text-center">
-            <p className="text-sm">Drap and drop video files to upload</p>
+            <p className="text-sm">Drag and drop video files to upload</p>
             <p className="text-xs text-muted-foreground">
               Your videos will be private until you publish them
             </p>
