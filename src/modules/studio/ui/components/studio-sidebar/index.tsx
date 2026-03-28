@@ -32,7 +32,7 @@ export const StudioSidebar = () => {
                 tooltip="Exit studio"
                 isActive={pathname === '/studio'}
               >
-                <Link href="/studio/videos">
+                <Link href="/studio">
                   <VideoIcon className="size-5" />
                   <span className="text-sm">Content</span>
                 </Link>
