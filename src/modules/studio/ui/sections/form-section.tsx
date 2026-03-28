@@ -3,6 +3,7 @@
 import { Suspense, useState } from 'react';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 
 import {
@@ -15,7 +16,10 @@ import {
   LockIcon,
   TrashIcon,
   Globe2Icon,
+  SparklesIcon,
   CopyCheckIcon,
+  ImagePlusIcon,
+  RotateCcwIcon,
   MoreVerticalIcon,
 } from 'lucide-react';
 import { z } from 'zod';
@@ -50,7 +54,9 @@ import { snakeCaseToTitle } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { videoUpdateSchema } from '@/db/schema';
 import { Textarea } from '@/components/ui/textarea';
+import { THUMBNAIL_FALLBACK } from '@/modules/videos/constants';
 import { VideoPlayer } from '@/modules/videos/ui/components/video-player';
+import { ThumbnailUploadModal } from '../components/thumbnail-upload-modal';
 
 interface Props {
   videoId: string;
@@ -61,6 +67,7 @@ const FormSectionSuspense = ({ videoId }: Props) => {
   const router = useRouter();
   const queryClient = useQueryClient();
   const [isCopied, setIsCopied] = useState(false);
+  const [thumbnailModalOpen, setThumbnailModalOpen] = useState(false);
 
   const { data } = useSuspenseQuery(
     trpc.studio.getOne.queryOptions({ id: videoId }),
@@ -111,6 +118,29 @@ const FormSectionSuspense = ({ videoId }: Props) => {
     }),
   );
 
+  const { mutate: restoreThumbnailMutate } = useMutation(
+    trpc.vidoes.restoreThumbnail.mutationOptions({
+      onSuccess() {
+        queryClient.invalidateQueries(
+          trpc.studio.getMany.infiniteQueryOptions(
+            { limit: DEFAULT_LIMIT },
+            { getNextPageParam: (lastpage) => lastpage.nextCursor },
+          ),
+        );
+
+        queryClient.invalidateQueries(
+          trpc.studio.getOne.queryOptions({ id: videoId }),
+        );
+
+        toast.success('Thumbnail restored');
+      },
+
+      onError: (error) => {
+        toast.error(error.message);
+      },
+    }),
+  );
+
   const form = useForm<z.infer<typeof videoUpdateSchema>>({
     defaultValues: data,
     resolver: zodResolver(videoUpdateSchema),
@@ -132,206 +162,274 @@ const FormSectionSuspense = ({ videoId }: Props) => {
   };
 
   return (
-    <form id="studio-form" onSubmit={form.handleSubmit(onSubmit)}>
-      <div className="flex items-center justify-between mb-6 ">
-        <div>
-          <h1 className="text-2xl font-bold">Video details</h1>
-          <p className="text-xs text-muted-foreground">
-            Manage your vide details
-          </p>
+    <>
+      <ThumbnailUploadModal
+        videoId={videoId}
+        open={thumbnailModalOpen}
+        onOpenChange={setThumbnailModalOpen}
+      />
+
+      <form id="studio-form" onSubmit={form.handleSubmit(onSubmit)}>
+        <div className="flex items-center justify-between mb-6 ">
+          <div>
+            <h1 className="text-2xl font-bold">Video details</h1>
+            <p className="text-xs text-muted-foreground">
+              Manage your vide details
+            </p>
+          </div>
+
+          <div className="flex items-center gap-x-2">
+            <Button
+              type="submit"
+              form="studio-form"
+              disabled={isPending}
+              className="cursor-pointer"
+            >
+              Save
+            </Button>
+
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon">
+                  <MoreVerticalIcon />
+                </Button>
+              </DropdownMenuTrigger>
+
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => removeMutate({ id: videoId })}>
+                  <TrashIcon className="size-4 mr-2" />
+                  Delete
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </div>
 
-        <div className="flex items-center gap-x-2">
-          <Button
-            type="submit"
-            form="studio-form"
-            disabled={isPending}
-            className="cursor-pointer"
-          >
-            Save
-          </Button>
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+          <div className="space-y-8 lg:col-span-3">
+            <FieldGroup>
+              <Controller
+                name="title"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field>
+                    <FieldLabel>Title</FieldLabel>
+                    <Input {...field} placeholder="Add a title to your video" />
 
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon">
-                <MoreVerticalIcon />
-              </Button>
-            </DropdownMenuTrigger>
-
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => removeMutate({ id: videoId })}>
-                <TrashIcon className="size-4 mr-2" />
-                Delete
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-        <div className="space-y-8 lg:col-span-3">
-          <FieldGroup>
-            <Controller
-              name="title"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Field>
-                  <FieldLabel>Title</FieldLabel>
-                  <Input {...field} placeholder="Add a title to your video" />
-
-                  {fieldState.invalid && (
-                    <FieldError errors={[fieldState.error]} />
-                  )}
-                </Field>
-              )}
-            />
-
-            <Controller
-              name="description"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Field>
-                  <FieldLabel>Description</FieldLabel>
-                  <Textarea
-                    {...field}
-                    rows={10}
-                    value={field.value ?? ''}
-                    className="resize-none pr-10"
-                    placeholder="Add a description to your video"
-                  />
-
-                  {fieldState.invalid && (
-                    <FieldError errors={[fieldState.error]} />
-                  )}
-                </Field>
-              )}
-            />
-
-            <Controller
-              name="categoryId"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Field>
-                  <FieldLabel>Category</FieldLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    defaultValue={field.value ?? undefined}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select a category" />
-                    </SelectTrigger>
-
-                    <SelectContent>
-                      {categories.map(({ id, name }) => (
-                        <SelectItem key={id} value={id}>
-                          {name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-
-                  {fieldState.invalid && (
-                    <FieldError errors={[fieldState.error]} />
-                  )}
-                </Field>
-              )}
-            />
-          </FieldGroup>
-        </div>
-
-        <div className="flex flex-col gap-y-8 lg:col-span-2">
-          <div className="flex flex-col gap-4 bg-[#F9F9F9] rounded-xl overflow-hidden h-fit">
-            <div className="aspect-video overflow-hidden relative">
-              <VideoPlayer
-                playbackId={data.muxPlaybackId}
-                thumbnailUrl={data.thumbnailUrl}
+                    {fieldState.invalid && (
+                      <FieldError errors={[fieldState.error]} />
+                    )}
+                  </Field>
+                )}
               />
-            </div>
 
-            <div className="p-4 flex flex-col gap-y-6">
-              <div className="flex justify-between items-center gap-x-2">
-                <div className="flex flex-col gap-y-1">
-                  <p className="text-muted-foreground text-xs">Video Link</p>
-                  <div className="flex items-center gap-x-2">
-                    <Link href={`/videos/${data.id}`}>
-                      <p className="line-clamp-1 text-sm text-blue-500">
-                        {fullUrl}
-                      </p>
-                    </Link>
+              <Controller
+                name="description"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field>
+                    <FieldLabel>Description</FieldLabel>
+                    <Textarea
+                      {...field}
+                      rows={10}
+                      value={field.value ?? ''}
+                      className="resize-none pr-10"
+                      placeholder="Add a description to your video"
+                    />
 
-                    <Button
-                      size="icon"
-                      type="button"
-                      variant="ghost"
-                      onClick={onCopy}
-                      disabled={isCopied}
-                      className="shrink-0 cursor-pointer"
+                    {fieldState.invalid && (
+                      <FieldError errors={[fieldState.error]} />
+                    )}
+                  </Field>
+                )}
+              />
+
+              <Controller
+                name="thumbnailUrl"
+                control={form.control}
+                render={() => (
+                  <Field>
+                    <FieldLabel>Thumbnail</FieldLabel>
+
+                    <div className="p-0.5 border border-dashed border-neutral-400 relative h-21 w-38.25! group">
+                      <Image
+                        fill
+                        alt="thumbnail"
+                        className="object-cover"
+                        src={data.thumbnailUrl ?? THUMBNAIL_FALLBACK}
+                      />
+
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            size="icon"
+                            type="button"
+                            className="cursor-pointer bg-black/50 hover:bg-black/50 absolute top-1 right-1 rounded-full opacity-100 md:opacity-0 group-hover:opacity-100 duration-300 size-7"
+                          >
+                            <MoreVerticalIcon className="text-white" />
+                          </Button>
+                        </DropdownMenuTrigger>
+
+                        <DropdownMenuContent
+                          align="start"
+                          side="right"
+                          className="w-37.5"
+                        >
+                          <DropdownMenuItem
+                            onClick={() => setThumbnailModalOpen(true)}
+                          >
+                            <ImagePlusIcon className="size-4 mr-1" />
+                            Change
+                          </DropdownMenuItem>
+
+                          <DropdownMenuItem>
+                            <SparklesIcon className="size-4 mr-1" />
+                            AI-generated
+                          </DropdownMenuItem>
+
+                          <DropdownMenuItem
+                            onClick={() =>
+                              restoreThumbnailMutate({ id: videoId })
+                            }
+                          >
+                            <RotateCcwIcon className="size-4 mr-1" />
+                            Restore
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+                  </Field>
+                )}
+              />
+
+              <Controller
+                name="categoryId"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field>
+                    <FieldLabel>Category</FieldLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value ?? undefined}
                     >
-                      {isCopied ? <CopyCheckIcon /> : <CopyIcon />}
-                    </Button>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a category" />
+                      </SelectTrigger>
+
+                      <SelectContent>
+                        {categories.map(({ id, name }) => (
+                          <SelectItem key={id} value={id}>
+                            {name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+
+                    {fieldState.invalid && (
+                      <FieldError errors={[fieldState.error]} />
+                    )}
+                  </Field>
+                )}
+              />
+            </FieldGroup>
+          </div>
+
+          <div className="flex flex-col gap-y-8 lg:col-span-2">
+            <div className="flex flex-col gap-4 bg-[#F9F9F9] rounded-xl overflow-hidden h-fit">
+              <div className="aspect-video overflow-hidden relative">
+                <VideoPlayer
+                  playbackId={data.muxPlaybackId}
+                  thumbnailUrl={data.thumbnailUrl}
+                />
+              </div>
+
+              <div className="p-4 flex flex-col gap-y-6">
+                <div className="flex justify-between items-center gap-x-2">
+                  <div className="flex flex-col gap-y-1">
+                    <p className="text-muted-foreground text-xs">Video Link</p>
+                    <div className="flex items-center gap-x-2">
+                      <Link href={`/videos/${data.id}`}>
+                        <p className="line-clamp-1 text-sm text-blue-500">
+                          {fullUrl}
+                        </p>
+                      </Link>
+
+                      <Button
+                        size="icon"
+                        type="button"
+                        variant="ghost"
+                        onClick={onCopy}
+                        disabled={isCopied}
+                        className="shrink-0 cursor-pointer"
+                      >
+                        {isCopied ? <CopyCheckIcon /> : <CopyIcon />}
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex justify-between items-center">
+                  <div className="flex flex-col gap-y-1">
+                    <p className="text-muted-foreground text-xs">
+                      Video status
+                    </p>
+                    <p className="text-sm">
+                      {snakeCaseToTitle(data.muxStatus || 'preparing')}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex justify-between items-center">
+                  <div className="flex flex-col gap-y-1">
+                    <p className="text-muted-foreground text-xs">
+                      Subtitles status
+                    </p>
+                    <p className="text-sm">
+                      {snakeCaseToTitle(data.muxTrackStatus || 'no_subtitles')}
+                    </p>
                   </div>
                 </div>
               </div>
-
-              <div className="flex justify-between items-center">
-                <div className="flex flex-col gap-y-1">
-                  <p className="text-muted-foreground text-xs">Video status</p>
-                  <p className="text-sm">
-                    {snakeCaseToTitle(data.muxStatus || 'preparing')}
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex justify-between items-center">
-                <div className="flex flex-col gap-y-1">
-                  <p className="text-muted-foreground text-xs">
-                    Subtitles status
-                  </p>
-                  <p className="text-sm">
-                    {snakeCaseToTitle(data.muxTrackStatus || 'no_subtitles')}
-                  </p>
-                </div>
-              </div>
             </div>
+
+            <FieldGroup className="mb-6">
+              <Controller
+                name="visibility"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field>
+                    <FieldLabel>Visibility</FieldLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value ?? undefined}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a visibility" />
+                      </SelectTrigger>
+
+                      <SelectContent>
+                        <SelectItem value="public">
+                          <Globe2Icon className="size-4 mr-2" />
+                          Public
+                        </SelectItem>
+                        <SelectItem value="private">
+                          <LockIcon className="size-4 mr-2" />
+                          Private
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+
+                    {fieldState.invalid && (
+                      <FieldError errors={[fieldState.error]} />
+                    )}
+                  </Field>
+                )}
+              />
+            </FieldGroup>
           </div>
-
-          <FieldGroup className="mb-6">
-            <Controller
-              name="visibility"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Field>
-                  <FieldLabel>Visibility</FieldLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    defaultValue={field.value ?? undefined}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select a visibility" />
-                    </SelectTrigger>
-
-                    <SelectContent>
-                      <SelectItem value="public">
-                        <Globe2Icon className="size-4 mr-2" />
-                        Public
-                      </SelectItem>
-                      <SelectItem value="private">
-                        <LockIcon className="size-4 mr-2" />
-                        Private
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
-
-                  {fieldState.invalid && (
-                    <FieldError errors={[fieldState.error]} />
-                  )}
-                </Field>
-              )}
-            />
-          </FieldGroup>
         </div>
-      </div>
-    </form>
+      </form>
+    </>
   );
 };
 

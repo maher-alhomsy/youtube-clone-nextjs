@@ -9,6 +9,9 @@ const nextConfig: NextConfig = {
       {
         hostname: 'image.mux.com',
       },
+      {
+        hostname: '55prakvw56.ufs.sh',
+      },
     ],
   },
 };

@@ -1,6 +1,7 @@
 import Image from 'next/image';
 
 import { formatDuration } from '@/lib/utils';
+import { THUMBNAIL_FALLBACK } from '../../constants';
 
 interface Props {
   title: string;
@@ -21,7 +22,7 @@ export const VideoThumbnail = ({
         <Image
           fill
           alt={title}
-          src={imageUrl ?? '/placeholder.svg'}
+          src={imageUrl ?? THUMBNAIL_FALLBACK}
           className="size-full object-cover group-hover:opacity-0"
         />
 
@@ -29,7 +30,7 @@ export const VideoThumbnail = ({
           fill
           alt={title}
           unoptimized={!!previewUrl}
-          src={previewUrl ?? '/placeholder.svg'}
+          src={previewUrl ?? THUMBNAIL_FALLBACK}
           className="size-full object-cover opacity-0 group-hover:opacity-100"
         />
       </div>

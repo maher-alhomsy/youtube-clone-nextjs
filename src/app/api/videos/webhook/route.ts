@@ -8,11 +8,11 @@ import {
   VideoAssetErroredWebhookEvent,
   VideoAssetTrackReadyWebhookEvent,
 } from '@mux/mux-node/resources/webhooks';
+// import { UTApi } from 'uploadthing/server';
 
 import { db } from '@/db';
 import { mux } from '@/lib/mux';
 import { videos } from '@/db/schema';
-import { stat } from 'fs';
 
 const SIGNING_SECRET = process.env.MUX_WEBHOOK_SECRET;
 
@@ -76,11 +76,28 @@ export const POST = async (request: Request) => {
       const previewUrl = `https://image.mux.com/${playbackId}/animated.gif`;
       const thumbnailUrl = `https://image.mux.com/${playbackId}/thumbnail.jpg`;
 
+      // const utapi = new UTApi();
+
+      // const [uploadedPreview, uploadedThumbnail] =
+      //   await utapi.uploadFilesFromUrl([tempPreviewUrl, tempThumbnailUrl]);
+
+      // if (!uploadedThumbnail.data || !uploadedPreview.data) {
+      //   return new Response('Failed to upload thumbnail or preview', {
+      //     status: 500,
+      //   });
+      // }
+
+      // const { key: previewKey, ufsUrl: previewUrl } = uploadedPreview.data;
+      // const { key: thumbnailKey, ufsUrl: thumbnailUrl } =
+      //   uploadedThumbnail.data;
+
       await db
         .update(videos)
         .set({
           duration,
           previewUrl,
+          // previewKey,
+          // thumbnailKey,
           thumbnailUrl,
           muxAssetId: data.id,
           muxStatus: data.status,
