@@ -1,17 +1,19 @@
 'use client';
 
 import { toast } from 'sonner';
+import { useRouter } from 'next/navigation';
 import { Loader2Icon, PlusIcon } from 'lucide-react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { useTRPC } from '@/trpc/client';
 import { DEFAULT_LIMIT } from '@/constants';
 import { Button } from '@/components/ui/button';
-import { ResponsiveModal } from '@/components/responsive-modal';
 import { StudioUploader } from './studio-uploader';
+import { ResponsiveModal } from '@/components/responsive-modal';
 
 const StudioUploadModal = () => {
   const trpc = useTRPC();
+  const router = useRouter();
   const queryClient = useQueryClient();
 
   const { mutate, isPending, data, reset } = useMutation(
@@ -33,6 +35,13 @@ const StudioUploadModal = () => {
     }),
   );
 
+  const onSuccess = () => {
+    if (!data?.video.id) return;
+
+    reset();
+    router.push(`/studio/videos/${data.video.id}`);
+  };
+
   return (
     <>
       <ResponsiveModal
@@ -41,7 +50,7 @@ const StudioUploadModal = () => {
         onOpenChange={() => reset()}
       >
         {data?.url ? (
-          <StudioUploader onSuccess={() => {}} endpoint={data.url} />
+          <StudioUploader onSuccess={onSuccess} endpoint={data.url} />
         ) : (
           <Loader2Icon />
         )}
