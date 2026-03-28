@@ -80,6 +80,10 @@ export const videosRouter = createTRPCRouter({
         .where(and(eq(videos.id, videoId), eq(videos.userId, userId)))
         .returning();
 
+      if (removedVideo.muxAssetId) {
+        await mux.video.assets.delete(removedVideo.muxAssetId);
+      }
+
       if (!removedVideo) {
         throw new TRPCError({ code: 'NOT_FOUND' });
       }
