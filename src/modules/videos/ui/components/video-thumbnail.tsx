@@ -21,6 +21,7 @@ export const VideoThumbnail = ({
       <div className="relative w-full overflow-hidden rounded-xl aspect-video">
         <Image
           fill
+          unoptimized
           alt={title}
           src={imageUrl ?? THUMBNAIL_FALLBACK}
           className="size-full object-cover group-hover:opacity-0"
