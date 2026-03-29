@@ -45,7 +45,7 @@ export const { POST } = serve(async (context) => {
     },
   );
 
-  const tempThumbnailUrl = body.data[0].url;
+  const tempThumbnailUrl = body.data?.[0]?.url;
 
   if (!tempThumbnailUrl) {
     throw new Error('Failed to generate thumbnail');

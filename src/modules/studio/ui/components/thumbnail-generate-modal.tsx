@@ -52,11 +52,11 @@ export const ThumbnailGenerateModal = ({
   return (
     <ResponsiveModal
       open={open}
-      title="Upload a thumbnail"
+      title="Generate a thumbnail"
       onOpenChange={onOpenChange}
     >
       <form
-        id="thumbnail-generate-from"
+        id="thumbnail-generate-form"
         className="flex flex-col gap-4"
         onSubmit={form.handleSubmit(onSubmit)}
       >
@@ -83,7 +83,7 @@ export const ThumbnailGenerateModal = ({
               type="submit"
               disabled={isPending}
               className="cursor-pointer"
-              form="thumbnail-generate-from"
+              form="thumbnail-generate-form"
             >
               Generate
             </Button>

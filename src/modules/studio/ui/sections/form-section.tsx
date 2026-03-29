@@ -192,8 +192,6 @@ const FormSectionSuspense = ({ videoId }: Props) => {
     }, 2000);
   };
 
-  console.log({ thumbnailUrl: data.thumbnailUrl });
-
   return (
     <>
       <ThumbnailUploadModal
