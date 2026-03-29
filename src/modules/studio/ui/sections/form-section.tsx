@@ -55,9 +55,11 @@ import { snakeCaseToTitle } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { videoUpdateSchema } from '@/db/schema';
 import { Textarea } from '@/components/ui/textarea';
+import { Skeleton } from '@/components/ui/skeleton';
 import { THUMBNAIL_FALLBACK } from '@/modules/videos/constants';
 import { VideoPlayer } from '@/modules/videos/ui/components/video-player';
 import { ThumbnailUploadModal } from '../components/thumbnail-upload-modal';
+import { ThumbnailGenerateModal } from '../components/thumbnail-generate-modal';
 
 interface Props {
   videoId: string;
@@ -69,6 +71,8 @@ const FormSectionSuspense = ({ videoId }: Props) => {
   const queryClient = useQueryClient();
   const [isCopied, setIsCopied] = useState(false);
   const [thumbnailModalOpen, setThumbnailModalOpen] = useState(false);
+  const [thumbnailGenerateModalOpen, setThumbnailGenerateModalOpen] =
+    useState(false);
 
   const { data } = useSuspenseQuery(
     trpc.studio.getOne.queryOptions({ id: videoId }),
@@ -142,17 +146,6 @@ const FormSectionSuspense = ({ videoId }: Props) => {
     }),
   );
 
-  const { mutate: generateThumbnailMutate } = useMutation(
-    trpc.vidoes.generateThumbnail.mutationOptions({
-      onSuccess: () => {
-        toast.success('Background job started');
-      },
-      onError: (error) => {
-        toast.error(error.message);
-      },
-    }),
-  );
-
   const { mutate: generateTitleMutate, isPending: isGeneratingTitle } =
     useMutation(
       trpc.vidoes.generateTitle.mutationOptions({
@@ -205,6 +198,12 @@ const FormSectionSuspense = ({ videoId }: Props) => {
         videoId={videoId}
         open={thumbnailModalOpen}
         onOpenChange={setThumbnailModalOpen}
+      />
+
+      <ThumbnailGenerateModal
+        videoId={videoId}
+        open={thumbnailGenerateModalOpen}
+        onOpenChange={setThumbnailGenerateModalOpen}
       />
 
       <form id="studio-form" onSubmit={form.handleSubmit(onSubmit)}>
@@ -336,6 +335,7 @@ const FormSectionSuspense = ({ videoId }: Props) => {
                         fill
                         alt="thumbnail"
                         className="object-cover"
+                        unoptimized={!!data.thumbnailUrl}
                         src={data.thumbnailUrl ?? THUMBNAIL_FALLBACK}
                       />
 
@@ -363,9 +363,7 @@ const FormSectionSuspense = ({ videoId }: Props) => {
                           </DropdownMenuItem>
 
                           <DropdownMenuItem
-                            onClick={() =>
-                              generateThumbnailMutate({ id: videoId })
-                            }
+                            onClick={() => setThumbnailGenerateModalOpen(true)}
                           >
                             <SparklesIcon className="size-4 mr-1" />
                             AI-generated
@@ -528,5 +526,68 @@ export const FormSection = ({ videoId }: Props) => {
 };
 
 const FormSectionSkeleton = () => {
-  return <p>Loading...</p>;
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-6 ">
+        <div className="space-y-2">
+          <Skeleton className="w-32 h-7" />
+          <Skeleton className="w-40 h-4" />
+        </div>
+
+        <Skeleton className="w-24 h-9" />
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+        <div className="space-y-8 lg:col-span-3">
+          <div className="space-y-2">
+            <Skeleton className="h-5 w-16" />
+            <Skeleton className="w-full h-10" />
+          </div>
+
+          <div className="space-y-2">
+            <Skeleton className="h-5 w-24" />
+            <Skeleton className="w-full h-55" />
+          </div>
+
+          <div className="space-y-2">
+            <Skeleton className="h-5 w-20" />
+            <Skeleton className="w-38.25 h-21" />
+          </div>
+
+          <div className="space-y-2">
+            <Skeleton className="h-5 w-20" />
+            <Skeleton className="w-full h-10" />
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-y-8 lg:col-span-2">
+          <div className="flex flex-col gap-4 bg-[#F9F9F9] rounded-xl overflow-hidden">
+            <Skeleton className="aspect-video" />
+
+            <div className="p-4 space-y-6">
+              <div className="space-y-2">
+                <Skeleton className="h-4 w-20" />
+                <Skeleton className="w-full h-5" />
+              </div>
+
+              <div className="space-y-2">
+                <Skeleton className="h-4 w-24" />
+                <Skeleton className="w-32 h-5" />
+              </div>
+
+              <div className="space-y-2">
+                <Skeleton className="h-4 w-24" />
+                <Skeleton className="w-32 h-5" />
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Skeleton className="h-5 w-20" />
+            <Skeleton className="w-full h-10" />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 };
