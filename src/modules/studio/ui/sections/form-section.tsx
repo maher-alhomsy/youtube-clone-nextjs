@@ -258,6 +258,8 @@ const FormSectionSuspense = ({ videoId }: Props) => {
                           size="icon"
                           type="button"
                           variant="outline"
+                          title="Generate title with AI"
+                          aria-label="Generate title with AI"
                           disabled={isGeneratingTitle || !data.muxTrackId}
                           className="cursor-pointer rounded-full size-6 [&_svg]:size-3"
                           onClick={() => generateTitleMutate({ id: videoId })}
@@ -291,6 +293,8 @@ const FormSectionSuspense = ({ videoId }: Props) => {
                           size="icon"
                           type="button"
                           variant="outline"
+                          title="Generate description with AI"
+                          aria-label="Generate description with AI"
                           disabled={isGeneratingDescription || !data.muxTrackId}
                           className="cursor-pointer rounded-full size-6 [&_svg]:size-3"
                           onClick={() =>

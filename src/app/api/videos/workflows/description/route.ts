@@ -36,7 +36,7 @@ export const { POST } = serve(async (context) => {
     const trackUrl = `https://stream.mux.com/${video.muxPlaybackId}/text/${video.muxTrackId}.txt`;
 
     const response = await fetch(trackUrl);
-    const text = response.text();
+    const text = await response.text();
 
     if (!text) {
       throw new Error('Transcript not found');
