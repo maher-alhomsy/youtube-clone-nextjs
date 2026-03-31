@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
       await db.insert(users).values({
         clerkId,
         imageUrl: image_url,
-        name: `${first_name} ${last_name}`,
+        name: `${first_name} ${last_name ?? ''}`,
       });
     }
 

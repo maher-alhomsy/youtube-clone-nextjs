@@ -17,7 +17,7 @@ const StudioUploadModal = () => {
   const queryClient = useQueryClient();
 
   const { mutate, isPending, data, reset } = useMutation(
-    trpc.vidoes.create.mutationOptions({
+    trpc.videos.create.mutationOptions({
       onSuccess: () => {
         queryClient.invalidateQueries(
           trpc.studio.getMany.infiniteQueryOptions(
