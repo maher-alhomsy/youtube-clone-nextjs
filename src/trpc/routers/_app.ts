@@ -4,7 +4,7 @@ import { studioRouter } from '@/modules/studio/server/procedures';
 import { categoriesRouter } from '@/modules/categories/server/procedures';
 
 export const appRouter = createTRPCRouter({
-  vidoes: videosRouter,
+  videos: videosRouter,
   studio: studioRouter,
   categories: categoriesRouter,
 });

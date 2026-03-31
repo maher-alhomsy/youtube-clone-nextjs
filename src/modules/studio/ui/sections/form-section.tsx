@@ -83,7 +83,7 @@ const FormSectionSuspense = ({ videoId }: Props) => {
   );
 
   const { mutate, isPending } = useMutation(
-    trpc.vidoes.update.mutationOptions({
+    trpc.videos.update.mutationOptions({
       onSuccess() {
         queryClient.invalidateQueries(
           trpc.studio.getOne.queryOptions({ id: videoId }),
@@ -105,7 +105,7 @@ const FormSectionSuspense = ({ videoId }: Props) => {
   );
 
   const { mutate: removeMutate } = useMutation(
-    trpc.vidoes.remove.mutationOptions({
+    trpc.videos.remove.mutationOptions({
       onSuccess() {
         queryClient.invalidateQueries(
           trpc.studio.getMany.infiniteQueryOptions(
@@ -124,7 +124,7 @@ const FormSectionSuspense = ({ videoId }: Props) => {
   );
 
   const { mutate: restoreThumbnailMutate } = useMutation(
-    trpc.vidoes.restoreThumbnail.mutationOptions({
+    trpc.videos.restoreThumbnail.mutationOptions({
       onSuccess() {
         queryClient.invalidateQueries(
           trpc.studio.getMany.infiniteQueryOptions(
@@ -148,7 +148,7 @@ const FormSectionSuspense = ({ videoId }: Props) => {
 
   const { mutate: generateTitleMutate, isPending: isGeneratingTitle } =
     useMutation(
-      trpc.vidoes.generateTitle.mutationOptions({
+      trpc.videos.generateTitle.mutationOptions({
         onSuccess: () => {
           toast.success('Background job started');
         },
@@ -162,7 +162,7 @@ const FormSectionSuspense = ({ videoId }: Props) => {
     mutate: generateDescriptionMutate,
     isPending: isGeneratingDescription,
   } = useMutation(
-    trpc.vidoes.generateDescription.mutationOptions({
+    trpc.videos.generateDescription.mutationOptions({
       onSuccess: () => {
         toast.success('Background job started');
       },
