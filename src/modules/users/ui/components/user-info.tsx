@@ -7,7 +7,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 
-const userInfoVariants = cva('flex itcems-center gap-1', {
+const userInfoVariants = cva('flex items-center gap-1', {
   variants: {
     size: {
       default: '[&_p]:text-sm [&_svg]:size-4',
