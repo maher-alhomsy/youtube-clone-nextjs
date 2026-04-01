@@ -2,8 +2,13 @@
 
 import { Suspense } from 'react';
 
+import {
+  useMutation,
+  useQueryClient,
+  useSuspenseQuery,
+} from '@tanstack/react-query';
+import { useAuth } from '@clerk/nextjs';
 import { ErrorBoundary } from 'react-error-boundary';
-import { useSuspenseQuery } from '@tanstack/react-query';
 
 import { cn } from '@/lib/utils';
 import { useTRPC } from '@/trpc/client';
@@ -27,10 +32,27 @@ export const VideoSection = ({ videoId }: Props) => {
 
 const VideoSectionSuspense = ({ videoId }: Props) => {
   const trpc = useTRPC();
+  const { isSignedIn } = useAuth();
+  const queryClient = useQueryClient();
 
   const { data: video } = useSuspenseQuery(
     trpc.videos.getOne.queryOptions({ id: videoId }),
   );
+
+  const { mutate } = useMutation(
+    trpc.videoViews.create.mutationOptions({
+      onSuccess: () => {
+        queryClient.invalidateQueries(
+          trpc.videos.getOne.queryOptions({ id: videoId }),
+        );
+      },
+    }),
+  );
+
+  const onPlay = () => {
+    if (!isSignedIn) return;
+    mutate({ videoId });
+  };
 
   return (
     <>
@@ -42,7 +64,7 @@ const VideoSectionSuspense = ({ videoId }: Props) => {
       >
         <VideoPlayer
           autoPlay
-          onPlay={() => {}}
+          onPlay={onPlay}
           playbackId={video.muxPlaybackId}
           thumbnailUrl={video.thumbnailUrl}
         />
