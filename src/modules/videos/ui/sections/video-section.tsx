@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense } from 'react';
+import { Suspense, useRef } from 'react';
 
 import {
   useMutation,
@@ -34,6 +34,7 @@ const VideoSectionSuspense = ({ videoId }: Props) => {
   const trpc = useTRPC();
   const { isSignedIn } = useAuth();
   const queryClient = useQueryClient();
+  const hasTrackedViewRef = useRef(false);
 
   const { data: video } = useSuspenseQuery(
     trpc.videos.getOne.queryOptions({ id: videoId }),
@@ -46,12 +47,23 @@ const VideoSectionSuspense = ({ videoId }: Props) => {
           trpc.videos.getOne.queryOptions({ id: videoId }),
         );
       },
+      // Remove ref access from here
     }),
   );
 
   const onPlay = () => {
     if (!isSignedIn) return;
-    mutate({ videoId });
+
+    if (!hasTrackedViewRef.current) {
+      mutate(
+        { videoId },
+        {
+          onError: () => {
+            hasTrackedViewRef.current = true;
+          },
+        },
+      );
+    }
   };
 
   return (

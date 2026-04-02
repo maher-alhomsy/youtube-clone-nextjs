@@ -12,6 +12,23 @@ export const videoViewsRouter = createTRPCRouter({
       const { videoId } = input;
       const { id: userId } = ctx.user;
 
+      // const [existingVideoView] = await db
+      //   .select()
+      //   .from(videoViews)
+      //   .where(
+      //     and(eq(videoViews.videoId, videoId), eq(videoViews.userId, userId)),
+      // );
+
+      const [createdVideoView] = await db
+        .insert(videoViews)
+        .values({ videoId, userId })
+        .onConflictDoNothing({
+          target: [videoViews.videoId, videoViews.userId],
+        })
+        .returning();
+
+      if (createdVideoView) return createdVideoView;
+
       const [existingVideoView] = await db
         .select()
         .from(videoViews)
@@ -19,15 +36,17 @@ export const videoViewsRouter = createTRPCRouter({
           and(eq(videoViews.videoId, videoId), eq(videoViews.userId, userId)),
         );
 
-      if (existingVideoView) {
-        return existingVideoView;
-      }
+      return existingVideoView;
 
-      const [createdVideoView] = await db
-        .insert(videoViews)
-        .values({ videoId, userId })
-        .returning();
+      // if (existingVideoView) {
+      //   return existingVideoView;
+      // }
 
-      return createdVideoView;
+      // const [createdVideoView] = await db
+      //   .insert(videoViews)
+      //   .values({ videoId, userId })
+      //   .returning();
+
+      // return createdVideoView;
     }),
 });
