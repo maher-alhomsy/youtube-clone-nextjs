@@ -40,16 +40,7 @@ const VideoSectionSuspense = ({ videoId }: Props) => {
     trpc.videos.getOne.queryOptions({ id: videoId }),
   );
 
-  const { mutate } = useMutation(
-    trpc.videoViews.create.mutationOptions({
-      onSuccess: () => {
-        queryClient.invalidateQueries(
-          trpc.videos.getOne.queryOptions({ id: videoId }),
-        );
-      },
-      // Remove ref access from here
-    }),
-  );
+  const { mutate } = useMutation(trpc.videoViews.create.mutationOptions());
 
   const onPlay = () => {
     if (!isSignedIn) return;
@@ -58,6 +49,12 @@ const VideoSectionSuspense = ({ videoId }: Props) => {
       mutate(
         { videoId },
         {
+          onSuccess: () => {
+            hasTrackedViewRef.current = true;
+            queryClient.invalidateQueries(
+              trpc.videos.getOne.queryOptions({ id: videoId }),
+            );
+          },
           onError: () => {
             hasTrackedViewRef.current = true;
           },
