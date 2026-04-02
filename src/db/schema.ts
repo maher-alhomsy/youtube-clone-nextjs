@@ -6,6 +6,7 @@ import {
   uniqueIndex,
   integer,
   pgEnum,
+  primaryKey,
 } from 'drizzle-orm/pg-core';
 // import { relations } from 'drizzle-orm';
 
@@ -90,6 +91,25 @@ export const videos = pgTable('videos', {
 export const videoInsertSchema = createInsertSchema(videos);
 export const videoUpdateSchema = createUpdateSchema(videos);
 export const videoSelectSchema = createSelectSchema(videos);
+
+export const videoViews = pgTable(
+  'video_views',
+  {
+    videoId: uuid('video_id')
+      .references(() => videos.id, { onDelete: 'cascade' })
+      .notNull(),
+
+    userId: uuid('user_id')
+      .references(() => users.id, { onDelete: 'cascade' })
+      .notNull(),
+
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+    updatedAt: timestamp('updated_at').notNull().defaultNow(),
+  },
+  (t) => [
+    primaryKey({ name: 'video_views_pk', columns: [t.userId, t.videoId] }),
+  ],
+);
 
 // export const videoRelations = relations(videos, ({ one }) => ({
 //   user: one(users, {
