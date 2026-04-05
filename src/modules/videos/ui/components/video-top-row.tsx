@@ -82,7 +82,7 @@ export const VideoTopRowSkeleton = () => {
           </div>
         </div>
 
-        <Skeleton className="w-2/6 h-9 md:1/6 rounded-full" />
+        <Skeleton className="w-2/6 h-9 md:w-1/6 rounded-full" />
       </div>
 
       <div className="h-30 w-full" />
