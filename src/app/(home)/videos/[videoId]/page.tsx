@@ -16,6 +16,10 @@ const Page = async ({ params }: Props) => {
     trpc.videos.getOne.queryOptions({ id: videoId }),
   );
 
+  void queryClient.prefetchQuery(
+    trpc.comments.getMany.queryOptions({ videoId }),
+  );
+
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
       <VideoView videoId={videoId} />
