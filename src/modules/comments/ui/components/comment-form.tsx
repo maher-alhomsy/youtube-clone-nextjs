@@ -11,6 +11,7 @@ import { commentInsertSchema } from '@/db/schema';
 import UserAvatar from '@/components/user-avatar';
 import { Textarea } from '@/components/ui/textarea';
 import { Field, FieldError } from '@/components/ui/field';
+import { DEFAULT_LIMIT } from '@/constants';
 
 interface Props {
   videoId: string;
@@ -36,7 +37,10 @@ export const CommentForm = ({ videoId, onSuccess }: Props) => {
     trpc.comments.create.mutationOptions({
       onSuccess: () => {
         queryClient.invalidateQueries(
-          trpc.comments.getMany.queryOptions({ videoId }),
+          trpc.comments.getMany.infiniteQueryOptions(
+            { videoId, limit: DEFAULT_LIMIT },
+            { getNextPageParam: (lastPage) => lastPage.nextCursor },
+          ),
         );
         form.reset();
 
