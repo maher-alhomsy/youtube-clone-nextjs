@@ -1,5 +1,6 @@
 import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
 
+import { DEFAULT_LIMIT } from '@/constants';
 import { getQueryClient, trpc } from '@/trpc/server';
 import VideoView from '@/modules/videos/ui/views/video-view';
 
@@ -16,8 +17,11 @@ const Page = async ({ params }: Props) => {
     trpc.videos.getOne.queryOptions({ id: videoId }),
   );
 
-  void queryClient.prefetchQuery(
-    trpc.comments.getMany.queryOptions({ videoId }),
+  void queryClient.prefetchInfiniteQuery(
+    trpc.comments.getMany.infiniteQueryOptions(
+      { videoId, limit: DEFAULT_LIMIT },
+      { getNextPageParam: (lastPage) => lastPage.nextCursor },
+    ),
   );
 
   return (
