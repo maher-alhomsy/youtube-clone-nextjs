@@ -12,9 +12,9 @@ import { ErrorBoundary } from 'react-error-boundary';
 
 import { cn } from '@/lib/utils';
 import { useTRPC } from '@/trpc/client';
-import { VideoPlayer } from '../components/video-player';
 import { VideoBanner } from '../components/video-banner';
-import { VideoTopRow } from '../components/video-top-row';
+import { VideoPlayer, VideoPlayerSkeleton } from '../components/video-player';
+import { VideoTopRow, VideoTopRowSkeleton } from '../components/video-top-row';
 
 interface Props {
   videoId: string;
@@ -22,11 +22,20 @@ interface Props {
 
 export const VideoSection = ({ videoId }: Props) => {
   return (
-    <Suspense fallback={<p>loading</p>}>
+    <Suspense fallback={<VideoSectionSkeleton />}>
       <ErrorBoundary fallback={<p>error</p>}>
         <VideoSectionSuspense videoId={videoId} />
       </ErrorBoundary>
     </Suspense>
+  );
+};
+
+const VideoSectionSkeleton = () => {
+  return (
+    <>
+      <VideoPlayerSkeleton />
+      <VideoTopRowSkeleton />
+    </>
   );
 };
 

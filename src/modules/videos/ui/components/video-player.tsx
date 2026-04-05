@@ -1,6 +1,7 @@
 'use client';
 
 import MuxPlayer from '@mux/mux-player-react';
+
 import { THUMBNAIL_FALLBACK } from '../../constants';
 
 interface Props {
@@ -9,6 +10,10 @@ interface Props {
   playbackId?: string | null | undefined;
   thumbnailUrl?: string | null | undefined;
 }
+
+export const VideoPlayerSkeleton = () => {
+  return <div className="rounded-xl aspect-video bg-black" />;
+};
 
 export const VideoPlayer = ({
   onPlay,

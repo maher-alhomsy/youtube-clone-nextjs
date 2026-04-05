@@ -160,6 +160,24 @@ export const videoReactionSelectSchema = createSelectSchema(videoReactions);
 export const videoReactionInsertSchema = createInsertSchema(videoReactions);
 export const videoReactionUpdateSchema = createUpdateSchema(videoReactions);
 
+export const comments = pgTable('comments', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  value: text('value').notNull(),
+  userId: uuid('user_id')
+    .references(() => users.id, { onDelete: 'cascade' })
+    .notNull(),
+  videoId: uuid('video_id')
+    .references(() => videos.id, { onDelete: 'cascade' })
+    .notNull(),
+
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+});
+
+export const commentInsertSchema = createInsertSchema(comments);
+export const commentUpdateSchema = createUpdateSchema(comments);
+export const commentSelectSchema = createSelectSchema(comments);
+
 // export const videoRelations = relations(videos, ({ one }) => ({
 //   user: one(users, {
 //     fields: [videos.userId],

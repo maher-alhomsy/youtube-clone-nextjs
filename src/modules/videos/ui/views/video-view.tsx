@@ -17,7 +17,7 @@ const VideoView = ({ videoId }: Props) => {
             <SuggestionsSection />
           </div>
 
-          <CommentsSection />
+          <CommentsSection videoId={videoId} />
         </div>
 
         <div className="xl:block hidden w-full xl:w-95 2xl:w-115 shrink">

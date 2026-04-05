@@ -7,6 +7,7 @@ import { VideoOwner } from './video-owner';
 import { VideoGetOneOutput } from '../../types';
 import { VideoReactions } from './video-reactions';
 import { VideoDescription } from './video-description';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface Props {
   video: VideoGetOneOutput;
@@ -60,6 +61,31 @@ export const VideoTopRow = ({ video }: Props) => {
         expandedViews={expandedViews}
         description={video.description}
       />
+    </div>
+  );
+};
+
+export const VideoTopRowSkeleton = () => {
+  return (
+    <div className="flex flex-col gap-4 mt-4">
+      <div className="flex flex-col gap-2">
+        <Skeleton className="w-4/5 h-6 md:w-2/5" />
+      </div>
+
+      <div className="flex items-center justify-between w-full">
+        <div className="flex items-center gap-3 w-[70%]">
+          <Skeleton className="w-10 h-10 rounded-full shrink-0" />
+
+          <div className="flex flex-col w-full gap-y-2">
+            <Skeleton className="w-4/5 h-5 md:w-2/6" />
+            <Skeleton className="w-3/5 h-5 md:w-11/5 " />
+          </div>
+        </div>
+
+        <Skeleton className="w-2/6 h-9 md:w-1/6 rounded-full" />
+      </div>
+
+      <div className="h-30 w-full" />
     </div>
   );
 };
