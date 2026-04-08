@@ -3,7 +3,13 @@ import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns';
 import { useAuth, useClerk } from '@clerk/nextjs';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { MessageSquareIcon, MoreVerticalIcon, Trash2Icon } from 'lucide-react';
+import {
+  MessageSquareIcon,
+  MoreVerticalIcon,
+  ThumbsDownIcon,
+  ThumbsUpIcon,
+  Trash2Icon,
+} from 'lucide-react';
 
 import {
   DropdownMenu,
@@ -16,6 +22,7 @@ import { useTRPC } from '@/trpc/client';
 import { DEFAULT_LIMIT } from '@/constants';
 import { Button } from '@/components/ui/button';
 import UserAvatar from '@/components/user-avatar';
+import { cn } from '@/lib/utils';
 
 interface Props {
   comment: Comment;
@@ -55,6 +62,48 @@ export const CommentItem = ({ comment }: Props) => {
     );
   };
 
+  const { mutate: likeMutation, isPending: isLikePending } = useMutation(
+    trpc.commentReactions.like.mutationOptions({
+      onSuccess: () => {
+        queryClient.invalidateQueries(
+          trpc.comments.getMany.infiniteQueryOptions(
+            { videoId: comment.videoId, limit: DEFAULT_LIMIT },
+            { getNextPageParam: (lastPage) => lastPage.nextCursor },
+          ),
+        );
+      },
+
+      onError: (error) => {
+        toast.error(error.message || 'Failed to react to comment');
+
+        if (error.data?.code === 'UNAUTHORIZED') {
+          clerk.openSignIn();
+        }
+      },
+    }),
+  );
+
+  const { mutate: dislikeMutation, isPending: isDislikePending } = useMutation(
+    trpc.commentReactions.dislike.mutationOptions({
+      onSuccess: () => {
+        queryClient.invalidateQueries(
+          trpc.comments.getMany.infiniteQueryOptions(
+            { videoId: comment.videoId, limit: DEFAULT_LIMIT },
+            { getNextPageParam: (lastPage) => lastPage.nextCursor },
+          ),
+        );
+      },
+
+      onError: (error) => {
+        toast.error(error.message || 'Failed to react to comment');
+
+        if (error.data?.code === 'UNAUTHORIZED') {
+          clerk.openSignIn();
+        }
+      },
+    }),
+  );
+
   return (
     <div className="flex gap-4">
       <Link href={`/users/${comment.userId}`}>
@@ -79,6 +128,46 @@ export const CommentItem = ({ comment }: Props) => {
         </Link>
 
         <p className="text-sm">{comment.value}</p>
+
+        <div className="flex items-center gap-2 mt-1">
+          <div className="flex items-center">
+            <Button
+              size="icon"
+              variant="ghost"
+              className="size-8 cursor-pointer"
+              disabled={isLikePending || isDislikePending}
+              onClick={() => likeMutation({ commentId: comment.id })}
+            >
+              <ThumbsUpIcon
+                className={cn(
+                  comment.viewerReaction === 'like' ? 'fill-black' : '',
+                )}
+              />
+            </Button>
+
+            <span className="text-xs text-muted-foreground">
+              {comment.likeCount}
+            </span>
+
+            <Button
+              size="icon"
+              variant="ghost"
+              className="size-8 cursor-pointer"
+              disabled={isLikePending || isDislikePending}
+              onClick={() => dislikeMutation({ commentId: comment.id })}
+            >
+              <ThumbsDownIcon
+                className={cn(
+                  comment.viewerReaction === 'dislike' ? 'fill-black ' : '',
+                )}
+              />
+            </Button>
+
+            <span className="text-xs text-muted-foreground">
+              {comment.dislikeCount}
+            </span>
+          </div>
+        </div>
       </div>
 
       <DropdownMenu modal={false}>
