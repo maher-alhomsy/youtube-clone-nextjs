@@ -6,19 +6,28 @@ import { Controller, useForm } from 'react-hook-form';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { useTRPC } from '@/trpc/client';
+import { DEFAULT_LIMIT } from '@/constants';
 import { Button } from '@/components/ui/button';
 import { commentInsertSchema } from '@/db/schema';
 import UserAvatar from '@/components/user-avatar';
 import { Textarea } from '@/components/ui/textarea';
 import { Field, FieldError } from '@/components/ui/field';
-import { DEFAULT_LIMIT } from '@/constants';
 
 interface Props {
   videoId: string;
+  parentId?: string;
+  onCancel?: () => void;
   onSuccess?: () => void;
+  variant?: 'comment' | 'reply';
 }
 
-export const CommentForm = ({ videoId, onSuccess }: Props) => {
+export const CommentForm = ({
+  videoId,
+  onSuccess,
+  parentId,
+  onCancel,
+  variant = 'comment',
+}: Props) => {
   const trpc = useTRPC();
   const clerk = useClerk();
   const { user } = useUser();
@@ -26,10 +35,10 @@ export const CommentForm = ({ videoId, onSuccess }: Props) => {
 
   const commentFormSchema = commentInsertSchema
     .omit({ userId: true })
-    .extend({ value: z.string().min(3) });
+    .extend({ value: variant === 'comment' ? z.string().min(3) : z.string() });
 
   const form = useForm<z.infer<typeof commentFormSchema>>({
-    defaultValues: { value: '', videoId },
+    defaultValues: { value: '', videoId, parentId },
     resolver: zodResolver(commentFormSchema),
   });
 
@@ -39,6 +48,13 @@ export const CommentForm = ({ videoId, onSuccess }: Props) => {
         queryClient.invalidateQueries(
           trpc.comments.getMany.infiniteQueryOptions(
             { videoId, limit: DEFAULT_LIMIT },
+            { getNextPageParam: (lastPage) => lastPage.nextCursor },
+          ),
+        );
+
+        queryClient.invalidateQueries(
+          trpc.comments.getMany.infiniteQueryOptions(
+            { videoId, limit: DEFAULT_LIMIT, parentId },
             { getNextPageParam: (lastPage) => lastPage.nextCursor },
           ),
         );
@@ -63,10 +79,15 @@ export const CommentForm = ({ videoId, onSuccess }: Props) => {
     mutate(data);
   };
 
+  const handleCancel = () => {
+    form.reset();
+    onCancel?.();
+  };
+
   return (
     <>
       <form
-        id="comment-form"
+        // id="comment-form"
         className="flex gap-4 group"
         onSubmit={form.handleSubmit(onSubmit)}
       >
@@ -84,7 +105,11 @@ export const CommentForm = ({ videoId, onSuccess }: Props) => {
               <Field>
                 <Textarea
                   {...field}
-                  placeholder="Add a comment..."
+                  placeholder={
+                    variant === 'comment'
+                      ? 'Add a comment...'
+                      : 'Reply to this comment...'
+                  }
                   className="resize-none bg-transparent overflow-hidden min-h-0 h-20"
                 />
                 {fieldState.invalid && (
@@ -95,14 +120,19 @@ export const CommentForm = ({ videoId, onSuccess }: Props) => {
           />
 
           <div className="flex justify-end gap-2 mt-2">
+            {onCancel && (
+              <Button variant="ghost" type="button" onClick={handleCancel}>
+                Cancel
+              </Button>
+            )}
             <Button
               size="sm"
               type="submit"
-              form="comment-form"
+              // form="comment-form"
               disabled={isPending}
               className="cursor-pointer"
             >
-              Comment
+              {variant === 'comment' ? 'Comment' : 'Reply'}
             </Button>
           </div>
         </div>

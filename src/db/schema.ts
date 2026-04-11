@@ -7,6 +7,7 @@ import {
   integer,
   pgEnum,
   primaryKey,
+  foreignKey,
 } from 'drizzle-orm/pg-core';
 // import { relations } from 'drizzle-orm';
 
@@ -160,19 +161,31 @@ export const videoReactionSelectSchema = createSelectSchema(videoReactions);
 export const videoReactionInsertSchema = createInsertSchema(videoReactions);
 export const videoReactionUpdateSchema = createUpdateSchema(videoReactions);
 
-export const comments = pgTable('comments', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  value: text('value').notNull(),
-  userId: uuid('user_id')
-    .references(() => users.id, { onDelete: 'cascade' })
-    .notNull(),
-  videoId: uuid('video_id')
-    .references(() => videos.id, { onDelete: 'cascade' })
-    .notNull(),
+export const comments = pgTable(
+  'comments',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    value: text('value').notNull(),
+    userId: uuid('user_id')
+      .references(() => users.id, { onDelete: 'cascade' })
+      .notNull(),
+    videoId: uuid('video_id')
+      .references(() => videos.id, { onDelete: 'cascade' })
+      .notNull(),
 
-  createdAt: timestamp('created_at').notNull().defaultNow(),
-  updatedAt: timestamp('updated_at').notNull().defaultNow(),
-});
+    parentId: uuid('parent_id'),
+
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+    updatedAt: timestamp('updated_at').notNull().defaultNow(),
+  },
+  (t) => [
+    foreignKey({
+      columns: [t.parentId],
+      foreignColumns: [t.id],
+      name: 'comments_parent_id_fkey',
+    }).onDelete('cascade'),
+  ],
+);
 
 export const commentInsertSchema = createInsertSchema(comments);
 export const commentUpdateSchema = createUpdateSchema(comments);
