@@ -216,13 +216,15 @@ export const CommentItem = ({ comment, variant = 'comment' }: Props) => {
           </DropdownMenuTrigger>
 
           <DropdownMenuContent align="end">
-            <DropdownMenuItem
-              disabled={isPending}
-              onClick={() => setIsReplyOpen(true)}
-            >
-              <MessageSquareIcon className="size-4" />
-              Reply
-            </DropdownMenuItem>
+            {variant === 'comment' && (
+              <DropdownMenuItem
+                disabled={isPending}
+                onClick={() => setIsReplyOpen(true)}
+              >
+                <MessageSquareIcon className="size-4" />
+                Reply
+              </DropdownMenuItem>
+            )}
 
             {comment.user.clerkId === userId && (
               <DropdownMenuItem disabled={isPending} onClick={onDelete}>
