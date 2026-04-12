@@ -24,6 +24,13 @@ const Page = async ({ params }: Props) => {
     ),
   );
 
+  void queryClient.prefetchInfiniteQuery(
+    trpc.suggestions.getMany.infiniteQueryOptions(
+      { videoId, limit: DEFAULT_LIMIT },
+      { getNextPageParam: (lastPage) => lastPage.nextCursor },
+    ),
+  );
+
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
       <VideoView videoId={videoId} />
