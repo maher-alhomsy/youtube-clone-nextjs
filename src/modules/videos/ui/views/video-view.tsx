@@ -14,14 +14,14 @@ const VideoView = ({ videoId }: Props) => {
           <VideoSection videoId={videoId} />
 
           <div className="xl:hidden block mt-4">
-            <SuggestionsSection />
+            <SuggestionsSection videoId={videoId} isManual />
           </div>
 
           <CommentsSection videoId={videoId} />
         </div>
 
         <div className="xl:block hidden w-full xl:w-95 2xl:w-115 shrink">
-          <SuggestionsSection />
+          <SuggestionsSection videoId={videoId} />
         </div>
       </div>
     </div>

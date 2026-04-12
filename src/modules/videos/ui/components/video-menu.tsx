@@ -20,7 +20,7 @@ interface Props {
   variant?: 'ghost' | 'secondary';
 }
 
-export const VideoMenu = ({ videoId, onRemove, variant }: Props) => {
+export const VideoMenu = ({ videoId, onRemove, variant = 'ghost' }: Props) => {
   const onShare = () => {
     const fullUrl = `${process.env.VERCEL_URL || 'http://localhost:3000'}/videos/${videoId}`;
     navigator.clipboard.writeText(fullUrl);
@@ -29,7 +29,7 @@ export const VideoMenu = ({ videoId, onRemove, variant }: Props) => {
   };
 
   return (
-    <DropdownMenu>
+    <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>
         <Button
           size="icon"
