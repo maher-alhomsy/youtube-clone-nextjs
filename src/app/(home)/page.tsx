@@ -7,6 +7,8 @@ interface Props {
   searchParams: Promise<{ categoryId?: string }>;
 }
 
+export const dynamic = 'force-dynamic';
+
 const Home = async ({ searchParams }: Props) => {
   const { categoryId } = await searchParams;
 

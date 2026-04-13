@@ -6,6 +6,8 @@ interface Props {
   params: Promise<{ videoId: string }>;
 }
 
+export const dynamic = 'force-dynamic';
+
 const Page = async ({ params }: Props) => {
   const { videoId } = await params;
 
