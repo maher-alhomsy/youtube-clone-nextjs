@@ -203,7 +203,8 @@ const FormSectionSuspense = ({ videoId }: Props) => {
     mutate(data);
   };
 
-  const fullUrl = `${APP_URL || 'http://localhost:3000'}/videos/${videoId}`;
+  const fullUrl = `${APP_URL}/videos/${videoId}`;
+
   const onCopy = async () => {
     await navigator.clipboard.writeText(fullUrl);
 
@@ -247,7 +248,7 @@ const FormSectionSuspense = ({ videoId }: Props) => {
               Save
             </Button>
 
-            <DropdownMenu>
+            <DropdownMenu modal={false}>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" className="cursor-pointer">
                   <MoreVerticalIcon />

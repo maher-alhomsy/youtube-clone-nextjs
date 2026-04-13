@@ -4,6 +4,8 @@ import { DEFAULT_LIMIT } from '@/constants';
 import { getQueryClient, trpc } from '@/trpc/server';
 import { StudioView } from '@/modules/studio/ui/views/studio-view';
 
+export const dynamic = 'force-dynamic';
+
 const Page = async () => {
   const queryClient = getQueryClient();
 
