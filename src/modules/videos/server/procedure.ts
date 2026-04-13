@@ -8,17 +8,17 @@ import {
   createTRPCRouter,
   protectedProcedure,
 } from '@/trpc/init';
+import {
+  users,
+  videos,
+  videoViews,
+  subscriptions,
+  videoReactions,
+  videoUpdateSchema,
+} from '@/db/schema';
 import { db } from '@/db';
 import { mux } from '@/lib/mux';
 import { workflow } from '@/lib/workflow';
-import {
-  subscriptions,
-  users,
-  videoReactions,
-  videos,
-  videoUpdateSchema,
-  videoViews,
-} from '@/db/schema';
 
 export const videosRouter = createTRPCRouter({
   create: protectedProcedure.mutation(async ({ ctx }) => {
@@ -40,7 +40,7 @@ export const videosRouter = createTRPCRouter({
       .insert(videos)
       .values({
         userId,
-        title: 'test Video',
+        title: '',
         muxStatus: 'waiting',
         muxUploadId: upload.id,
       })
@@ -277,5 +277,63 @@ export const videosRouter = createTRPCRouter({
       }
 
       return video;
+    }),
+
+  revalidate: protectedProcedure
+    .input(z.object({ id: z.uuid() }))
+    .mutation(async ({ input, ctx }) => {
+      const { id: videoId } = input;
+      const { id: userId } = ctx.user;
+
+      const [existingVideo] = await db
+        .select()
+        .from(videos)
+        .where(and(eq(videos.id, videoId), eq(videos.userId, userId)));
+
+      if (!existingVideo) {
+        throw new TRPCError({ code: 'NOT_FOUND' });
+      }
+
+      if (!existingVideo.muxUploadId) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'Cannot revalidate a video without an upload ID',
+        });
+      }
+
+      const directUpload = await mux.video.uploads.retrieve(
+        existingVideo.muxUploadId,
+      );
+
+      if (!directUpload || !directUpload.asset_id) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Mux upload not found',
+        });
+      }
+
+      const asset = await mux.video.assets.retrieve(directUpload.asset_id);
+
+      if (!asset) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Mux asset not found',
+        });
+      }
+
+      const duration = asset.duration ? Math.round(asset.duration * 1000) : 0;
+
+      const [updatedVideo] = await db
+        .update(videos)
+        .set({
+          duration,
+          muxAssetId: asset.id,
+          muxStatus: asset.status,
+          muxPlaybackId: asset.playback_ids?.[0]?.id || null,
+        })
+        .where(and(eq(videos.id, videoId), eq(videos.userId, userId)))
+        .returning();
+
+      return updatedVideo;
     }),
 });

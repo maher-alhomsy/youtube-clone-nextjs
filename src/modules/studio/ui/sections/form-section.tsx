@@ -49,13 +49,13 @@ import {
   FieldLabel,
 } from '@/components/ui/field';
 import { useTRPC } from '@/trpc/client';
-import { DEFAULT_LIMIT } from '@/constants';
 import { Input } from '@/components/ui/input';
 import { snakeCaseToTitle } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { videoUpdateSchema } from '@/db/schema';
 import { Textarea } from '@/components/ui/textarea';
 import { Skeleton } from '@/components/ui/skeleton';
+import { APP_URL, DEFAULT_LIMIT } from '@/constants';
 import { THUMBNAIL_FALLBACK } from '@/modules/videos/constants';
 import { VideoPlayer } from '@/modules/videos/ui/components/video-player';
 import { ThumbnailUploadModal } from '../components/thumbnail-upload-modal';
@@ -123,6 +123,28 @@ const FormSectionSuspense = ({ videoId }: Props) => {
     }),
   );
 
+  const { mutate: revalidateMutate } = useMutation(
+    trpc.videos.revalidate.mutationOptions({
+      onSuccess() {
+        queryClient.invalidateQueries(
+          trpc.studio.getMany.infiniteQueryOptions(
+            { limit: DEFAULT_LIMIT },
+            { getNextPageParam: (lastpage) => lastpage.nextCursor },
+          ),
+        );
+
+        queryClient.invalidateQueries(
+          trpc.studio.getOne.queryOptions({ id: videoId }),
+        );
+
+        toast.success('Video revalidated');
+      },
+      onError: (error) => {
+        toast.error(error.message);
+      },
+    }),
+  );
+
   const { mutate: restoreThumbnailMutate } = useMutation(
     trpc.videos.restoreThumbnail.mutationOptions({
       onSuccess() {
@@ -181,7 +203,7 @@ const FormSectionSuspense = ({ videoId }: Props) => {
     mutate(data);
   };
 
-  const fullUrl = `${process.env.VERCEL_URL || 'http://localhost:3000'}/videos/${videoId}`;
+  const fullUrl = `${APP_URL || 'http://localhost:3000'}/videos/${videoId}`;
   const onCopy = async () => {
     await navigator.clipboard.writeText(fullUrl);
 
@@ -227,13 +249,24 @@ const FormSectionSuspense = ({ videoId }: Props) => {
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon">
+                <Button variant="ghost" size="icon" className="cursor-pointer">
                   <MoreVerticalIcon />
                 </Button>
               </DropdownMenuTrigger>
 
               <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => removeMutate({ id: videoId })}>
+                <DropdownMenuItem
+                  className="cursor-pointer"
+                  onClick={() => revalidateMutate({ id: videoId })}
+                >
+                  <RotateCcwIcon className="size-4 mr-2" />
+                  Revalidate
+                </DropdownMenuItem>
+
+                <DropdownMenuItem
+                  className="cursor-pointer"
+                  onClick={() => removeMutate({ id: videoId })}
+                >
                   <TrashIcon className="size-4 mr-2" />
                   Delete
                 </DropdownMenuItem>

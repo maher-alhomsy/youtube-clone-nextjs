@@ -12,6 +12,7 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { APP_URL } from '@/constants';
 import { Button } from '@/components/ui/button';
 
 interface Props {
@@ -22,7 +23,7 @@ interface Props {
 
 export const VideoMenu = ({ videoId, onRemove, variant = 'ghost' }: Props) => {
   const onShare = () => {
-    const fullUrl = `${process.env.VERCEL_URL || 'http://localhost:3000'}/videos/${videoId}`;
+    const fullUrl = `${APP_URL || 'http://localhost:3000'}/videos/${videoId}`;
     navigator.clipboard.writeText(fullUrl);
 
     toast.success('Link copied to the clipboard');
