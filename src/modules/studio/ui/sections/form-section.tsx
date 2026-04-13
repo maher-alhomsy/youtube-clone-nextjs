@@ -123,7 +123,7 @@ const FormSectionSuspense = ({ videoId }: Props) => {
     }),
   );
 
-  const { mutate: revalidateMutate } = useMutation(
+  const { mutate: revalidateMutate, isPending: isRevalidating } = useMutation(
     trpc.videos.revalidate.mutationOptions({
       onSuccess() {
         queryClient.invalidateQueries(
@@ -256,6 +256,7 @@ const FormSectionSuspense = ({ videoId }: Props) => {
 
               <DropdownMenuContent align="end">
                 <DropdownMenuItem
+                  disabled={isRevalidating}
                   className="cursor-pointer"
                   onClick={() => revalidateMutate({ id: videoId })}
                 >
