@@ -3,6 +3,7 @@ import { useClerk } from '@clerk/nextjs';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { useTRPC } from '@/trpc/client';
+import { DEFAULT_LIMIT } from '@/constants';
 
 interface Props {
   creatorId: string;
@@ -23,6 +24,13 @@ export const useSubscription = ({
     trpc.subscriptions.create.mutationOptions({
       onSuccess: () => {
         toast.success('Subscribed!');
+
+        queryClient.invalidateQueries(
+          trpc.videos.getManySubscribed.infiniteQueryOptions(
+            { limit: DEFAULT_LIMIT },
+            { getNextPageParam: (lastPage) => lastPage.nextCursor },
+          ),
+        );
 
         if (fromVideoId) {
           queryClient.invalidateQueries(
@@ -45,6 +53,13 @@ export const useSubscription = ({
     trpc.subscriptions.remove.mutationOptions({
       onSuccess: () => {
         toast.success('Unsubscribed!');
+
+        queryClient.invalidateQueries(
+          trpc.videos.getManySubscribed.infiniteQueryOptions(
+            { limit: DEFAULT_LIMIT },
+            { getNextPageParam: (lastPage) => lastPage.nextCursor },
+          ),
+        );
 
         if (fromVideoId) {
           queryClient.invalidateQueries(
