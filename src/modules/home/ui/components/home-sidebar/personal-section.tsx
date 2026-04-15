@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 
 import { useAuth, useClerk } from '@clerk/nextjs';
 import { HistoryIcon, ListVideoIcon, ThumbsUpIcon } from 'lucide-react';
@@ -17,13 +18,13 @@ import {
 const itemes = [
   {
     title: 'History',
-    url: '/playlist/history',
+    url: '/playlists/history',
     icon: HistoryIcon,
     auth: true,
   },
   {
     title: 'Liked videos',
-    url: '/playlist/liked',
+    url: '/playlists/liked',
     icon: ThumbsUpIcon,
     auth: true,
   },
@@ -36,6 +37,7 @@ const itemes = [
 
 export const PersonalSection = () => {
   const clerk = useClerk();
+  const pathname = usePathname();
   const { isSignedIn } = useAuth();
 
   return (
@@ -48,7 +50,7 @@ export const PersonalSection = () => {
             <SidebarMenuItem key={item.url}>
               <SidebarMenuButton
                 asChild
-                isActive={false}
+                isActive={pathname === item.url}
                 onClick={(e) => {
                   if (!isSignedIn && item.auth) {
                     e.preventDefault();
