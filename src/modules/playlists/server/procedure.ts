@@ -1,9 +1,18 @@
 import { z } from 'zod';
+import { TRPCError } from '@trpc/server';
 import { eq, lt, or, and, desc, getTableColumns } from 'drizzle-orm';
 
+import {
+  users,
+  videos,
+  playlists,
+  videoViews,
+  videoReactions,
+  playlistVideos,
+  playlistInsertSchema,
+} from '@/db/schema';
 import { db } from '@/db';
 import { createTRPCRouter, protectedProcedure } from '@/trpc/init';
-import { users, videos, videoViews, videoReactions } from '@/db/schema';
 
 export const playlistsRouter = createTRPCRouter({
   getLiked: protectedProcedure
@@ -164,5 +173,80 @@ export const playlistsRouter = createTRPCRouter({
         : null;
 
       return { items, nextCursor };
+    }),
+
+  getMany: protectedProcedure
+    .input(
+      z.object({
+        limit: z.number().min(1).max(100),
+        cursor: z.object({ id: z.uuid(), updatedAt: z.date() }).nullish(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const { id: userId } = ctx.user;
+      const { cursor, limit } = input;
+
+      const data = await db
+        .select({
+          ...getTableColumns(playlists),
+          count: db.$count(
+            playlistVideos,
+            eq(playlistVideos.playlistId, playlists.id),
+          ),
+          user: users,
+        })
+        .from(playlists)
+        .innerJoin(users, eq(users.id, playlists.userId))
+        .where(
+          and(
+            eq(playlists.userId, userId),
+            cursor
+              ? or(
+                  lt(playlists.updatedAt, cursor.updatedAt),
+                  and(
+                    eq(playlists.updatedAt, cursor.updatedAt),
+                    lt(playlists.id, cursor.id),
+                  ),
+                )
+              : undefined,
+          ),
+        )
+        .orderBy(desc(playlists.updatedAt), desc(playlists.id))
+        .limit(limit + 1);
+
+      const hasMore = data.length > limit;
+      const items = hasMore ? data.slice(0, -1) : data;
+      const lastItem = items[items.length - 1];
+      const nextCursor = hasMore
+        ? { id: lastItem.id, updatedAt: lastItem.updatedAt }
+        : null;
+
+      return { items, nextCursor };
+    }),
+
+  create: protectedProcedure
+    .input(
+      playlistInsertSchema
+        .omit({ userId: true })
+        .extend({ name: z.string().min(1) }),
+    )
+    .mutation(async ({ input, ctx }) => {
+      const { id: userId } = ctx.user;
+      const { name, description } = input;
+
+      const [createdPlaylist] = await db
+        .insert(playlists)
+        .values({
+          name,
+          userId,
+          description,
+        })
+        .returning();
+
+      if (!createdPlaylist) {
+        throw new TRPCError({ code: 'BAD_REQUEST' });
+      }
+
+      return createdPlaylist;
     }),
 });

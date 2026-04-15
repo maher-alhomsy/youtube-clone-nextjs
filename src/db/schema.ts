@@ -215,6 +215,43 @@ export const commentReactions = pgTable(
   ],
 );
 
+export const playlistVideos = pgTable(
+  'playlist_videos',
+  {
+    playlistId: uuid('playlist_id')
+      .references(() => playlists.id, { onDelete: 'cascade' })
+      .notNull(),
+    videoId: uuid('video_id')
+      .references(() => videos.id, { onDelete: 'cascade' })
+      .notNull(),
+
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+    updatedAt: timestamp('updated_at').notNull().defaultNow(),
+  },
+  (t) => [
+    primaryKey({
+      name: 'playlist_videos_pk',
+      columns: [t.playlistId, t.videoId],
+    }),
+  ],
+);
+
+export const playlists = pgTable('playlists', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: uuid('user_id')
+    .references(() => users.id, { onDelete: 'cascade' })
+    .notNull(),
+
+  name: text('name').notNull(),
+  description: text('description'),
+
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+});
+
+export const playlistInsertSchema = createInsertSchema(playlists);
+export const playlistUpdateSchema = createUpdateSchema(playlists);
+
 // export const videoRelations = relations(videos, ({ one }) => ({
 //   user: one(users, {
 //     fields: [videos.userId],
