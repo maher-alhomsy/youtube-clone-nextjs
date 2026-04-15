@@ -8,6 +8,7 @@ import { useTRPC } from '@/trpc/client';
 import { Button } from '@/components/ui/button';
 import { type VideoGetOneOutput } from '../../types';
 import { Separator } from '@/components/ui/separator';
+import { DEFAULT_LIMIT } from '@/constants';
 
 interface Props {
   likes: number;
@@ -49,6 +50,13 @@ export const VideoReactions = ({
       onSuccess: () => {
         queryClient.invalidateQueries(
           trpc.videos.getOne.queryOptions({ id: videoId }),
+        );
+
+        queryClient.invalidateQueries(
+          trpc.playlists.getLiked.infiniteQueryOptions(
+            { limit: DEFAULT_LIMIT },
+            { getNextPageParam: (page) => page.nextCursor },
+          ),
         );
       },
       onError: (error) => {
