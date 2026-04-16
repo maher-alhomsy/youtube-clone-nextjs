@@ -32,6 +32,8 @@ export const PlaylistThumbnail = ({
     return Intl.NumberFormat('en', { notation: 'compact' }).format(count);
   }, [count]);
 
+  console.log({ title, imageUrl });
+
   return (
     <div className={cn('relative pt-3', className)}>
       {/* Stack effect layers */}
@@ -43,6 +45,7 @@ export const PlaylistThumbnail = ({
         <div className="relative overflow-hidden w-full rounded-xl aspect-video">
           <Image
             fill
+            unoptimized
             alt={title}
             className="size-full object-cover"
             src={imageUrl || THUMBNAIL_FALLBACK}
