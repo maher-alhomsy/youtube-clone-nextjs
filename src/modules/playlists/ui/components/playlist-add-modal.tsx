@@ -39,12 +39,23 @@ export const PlaylistAddModal = ({ open, onOpenChange, videoId }: Props) => {
 
   const { mutate: addVideo, isPending: isAddingVideo } = useMutation(
     trpc.playlists.addVideo.mutationOptions({
-      onSuccess: () => {
+      onSuccess: ({ playlistId }) => {
         toast.success('Video added to the playlist');
 
         queryClient.invalidateQueries(
           trpc.playlists.getManyForVideo.infiniteQueryOptions(
             { videoId, limit: DEFAULT_LIMIT },
+            { getNextPageParam: (lastPage) => lastPage.nextCursor },
+          ),
+        );
+
+        queryClient.invalidateQueries(
+          trpc.playlists.getOne.queryOptions({ playlistId }),
+        );
+
+        queryClient.invalidateQueries(
+          trpc.playlists.getVideos.infiniteQueryOptions(
+            { playlistId, limit: DEFAULT_LIMIT },
             { getNextPageParam: (lastPage) => lastPage.nextCursor },
           ),
         );
@@ -70,12 +81,23 @@ export const PlaylistAddModal = ({ open, onOpenChange, videoId }: Props) => {
 
   const { mutate: removeVideo, isPending: isRemovingVideo } = useMutation(
     trpc.playlists.removeVideo.mutationOptions({
-      onSuccess: () => {
+      onSuccess: ({ playlistId }) => {
         toast.success('Video removed from the playlist');
 
         queryClient.invalidateQueries(
           trpc.playlists.getMany.infiniteQueryOptions(
             { limit: DEFAULT_LIMIT },
+            { getNextPageParam: (lastPage) => lastPage.nextCursor },
+          ),
+        );
+
+        queryClient.invalidateQueries(
+          trpc.playlists.getOne.queryOptions({ playlistId }),
+        );
+
+        queryClient.invalidateQueries(
+          trpc.playlists.getVideos.infiniteQueryOptions(
+            { playlistId, limit: DEFAULT_LIMIT },
             { getNextPageParam: (lastPage) => lastPage.nextCursor },
           ),
         );

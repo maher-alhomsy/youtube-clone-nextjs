@@ -4,6 +4,8 @@ import { DEFAULT_LIMIT } from '@/constants';
 import { getQueryClient, trpc } from '@/trpc/server';
 import { LikedView } from '@/modules/playlists/ui/views/liked-view';
 
+export const dynamic = 'force-dynamic';
+
 const Page = () => {
   const queryClient = getQueryClient();
 

@@ -128,7 +128,7 @@ const VideosSectionSuspense = () => {
                   className="cursor-pointer"
                   onClick={() => router.push(`/studio/videos/${video.id}`)}
                 >
-                  <TableCell className="pl-6">
+                  <TableCell className="pl-6 whitespace-normal">
                     <div className="flex items-center gap-4">
                       <div className="relative aspect-video w-36 shrink-0">
                         <VideoThumbnail
@@ -139,11 +139,11 @@ const VideosSectionSuspense = () => {
                         />
                       </div>
 
-                      <div className="flex flex-col overflow-hidden gap-y-1">
+                      <div className="flex min-w-40 flex-col overflow-hidden gap-y-1">
                         <span className="text-sm line-clamp-1">
                           {video.title}
                         </span>
-                        <span className="text-xs text-muted-foreground line-clamp-1">
+                        <span className="text-xs text-muted-foreground line-clamp-2">
                           {video.description || 'no description'}
                         </span>
                       </div>
@@ -171,10 +171,14 @@ const VideosSectionSuspense = () => {
                     {format(new Date(video.createdAt), 'd MMM yyyy')}
                   </TableCell>
 
-                  <TableCell className="text-right text-sm">Views</TableCell>
-                  <TableCell className="text-right text-sm">Comments</TableCell>
+                  <TableCell className="text-right text-sm">
+                    {video.viewCount}
+                  </TableCell>
+                  <TableCell className="text-right text-sm">
+                    {video.commentCount}
+                  </TableCell>
                   <TableCell className="text-right text-sm pr-6">
-                    Likes
+                    {video.likeCount}
                   </TableCell>
                 </TableRow>
               ))}

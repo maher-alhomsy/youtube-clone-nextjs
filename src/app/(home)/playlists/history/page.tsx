@@ -1,7 +1,10 @@
-import { DEFAULT_LIMIT } from '@/constants';
-import { HistoryView } from '@/modules/playlists/ui/views/history-view';
-import { getQueryClient, trpc } from '@/trpc/server';
 import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
+
+import { DEFAULT_LIMIT } from '@/constants';
+import { getQueryClient, trpc } from '@/trpc/server';
+import { HistoryView } from '@/modules/playlists/ui/views/history-view';
+
+export const dynamic = 'force-dynamic';
 
 const Page = async () => {
   const queryClient = getQueryClient();
