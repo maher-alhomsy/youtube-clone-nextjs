@@ -69,6 +69,7 @@ const PlaylistHeaderSectionSuspense = ({ playlistId }: Props) => {
         disabled={isPending}
         onClick={handleRemove}
         className="rounded-full cursor-pointer"
+        aria-label="Delete playlist"
       >
         <Trash2Icon />
       </Button>
