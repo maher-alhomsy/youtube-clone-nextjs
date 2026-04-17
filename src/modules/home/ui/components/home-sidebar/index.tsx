@@ -1,7 +1,10 @@
+import { Show } from '@clerk/nextjs';
+
 import { MainSection } from './main-section';
-import { Separator } from '@/components/ui/separator';
-import { Sidebar, SidebarContent } from '@/components/ui/sidebar';
 import { PersonalSection } from './personal-section';
+import { Separator } from '@/components/ui/separator';
+import { SubscriptionsSection } from './subscriptions-section';
+import { Sidebar, SidebarContent } from '@/components/ui/sidebar';
 
 export const HomeSidebar = () => {
   return (
@@ -11,6 +14,12 @@ export const HomeSidebar = () => {
         <Separator />
 
         <PersonalSection />
+
+        <Show when="signed-in">
+          <Separator />
+
+          <SubscriptionsSection />
+        </Show>
       </SidebarContent>
     </Sidebar>
   );

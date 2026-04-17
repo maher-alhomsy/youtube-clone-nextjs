@@ -5,8 +5,8 @@ interface Props {
   size?: string;
   disabled: boolean;
   className?: string;
-  onClick: () => void;
   isSubscribed: boolean;
+  onClick: (e?: React.MouseEvent<HTMLButtonElement>) => void;
 }
 
 export const SubscriptionButton = ({

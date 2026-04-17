@@ -33,6 +33,13 @@ export const useSubscription = ({
         );
 
         queryClient.invalidateQueries(
+          trpc.subscriptions.getMany.infiniteQueryOptions(
+            { limit: DEFAULT_LIMIT },
+            { getNextPageParam: (page) => page.nextCursor },
+          ),
+        );
+
+        queryClient.invalidateQueries(
           trpc.users.getOne.queryOptions({ userId: creatorId }),
         );
 
@@ -62,6 +69,13 @@ export const useSubscription = ({
           trpc.videos.getManySubscribed.infiniteQueryOptions(
             { limit: DEFAULT_LIMIT },
             { getNextPageParam: (lastPage) => lastPage.nextCursor },
+          ),
+        );
+
+        queryClient.invalidateQueries(
+          trpc.subscriptions.getMany.infiniteQueryOptions(
+            { limit: DEFAULT_LIMIT },
+            { getNextPageParam: (page) => page.nextCursor },
           ),
         );
 
