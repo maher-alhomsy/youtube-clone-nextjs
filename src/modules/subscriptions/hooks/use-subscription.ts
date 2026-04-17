@@ -32,6 +32,10 @@ export const useSubscription = ({
           ),
         );
 
+        queryClient.invalidateQueries(
+          trpc.users.getOne.queryOptions({ userId: creatorId }),
+        );
+
         if (fromVideoId) {
           queryClient.invalidateQueries(
             trpc.videos.getOne.queryOptions({ id: fromVideoId }),
@@ -59,6 +63,10 @@ export const useSubscription = ({
             { limit: DEFAULT_LIMIT },
             { getNextPageParam: (lastPage) => lastPage.nextCursor },
           ),
+        );
+
+        queryClient.invalidateQueries(
+          trpc.users.getOne.queryOptions({ userId: creatorId }),
         );
 
         if (fromVideoId) {
